@@ -65,8 +65,6 @@ describe('Element Test', () => {
         expect(classValue).to.contain('checked')
       })
 
-
-
   })
 
   it('assert date picker', () => {
@@ -79,7 +77,6 @@ describe('Element Test', () => {
       cy.wrap(Input).invoke('prop', 'value').should('contain', 'Aug 18, 2023')
 
     })
-
 
   })
 
@@ -119,7 +116,7 @@ describe('Element Test', () => {
     cy.get('[type="checkbox"]').eq(0).click({ force: true })
   })
 
-  it.only('option and dropdown', () => {
+  it('option and dropdown', () => {
     cy.visit('/')
     // cy.get('nav nb-select').click()
     // cy.get('.options-list').contains('Dark').click()
@@ -153,6 +150,50 @@ describe('Element Test', () => {
 
   })
 
+  it.only('table test', () => {
+    cy.visit('/')
+    cy.contains("Tables & Data").click()
+    cy.contains("Smart Table").click()
+
+    cy.get('tbody').contains('tr', 'Larry').then(tableRow => {
+      cy.wrap(tableRow).find('.nb-edit').click()
+      cy.wrap(tableRow).find('[placeholder="Age"]').clear().type('25')
+      cy.wrap(tableRow).find('.nb-checkmark').click()
+      cy.wrap(tableRow).find('td').eq(6).should('contain', '25')
+
+    })
+
+    cy.get('thead').find('.nb-plus').click()
+    cy.get('thead').find('tr').eq(2).then(tableRow => {
+      cy.wrap(tableRow).find('[placeholder="First Name"]').type('Emad')
+      cy.wrap(tableRow).find('[placeholder="Last Name"]').type('Deym')
+      cy.wrap(tableRow).find('.nb-checkmark').click()
+
+
+    })
+
+    cy.get('tbody tr').find('td').then(tableBody => {
+      cy.wrap(tableBody).eq(2).should('contain', 'Emad')
+      cy.wrap(tableBody).eq(3).should('contain', 'Deym')
+    })
+
+    const age = [20, 30, 40,200]
+    cy.wrap(age).each(age => {
+      cy.get('thead [placeholder="Age"]').clear().type(age)
+      cy.wait(500)     
+      cy.get('tbody tr').each(tableRow => {
+       if(age==200){
+        cy.wrap(tableRow).should('contain','No data found')
+       } else{
+        cy.wrap(tableRow).find('td').eq(6).should('contain', age)
+       }
+       
+      })
+    })
+
+
+
+  })
 
 
 
