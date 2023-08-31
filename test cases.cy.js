@@ -71,10 +71,30 @@ describe('Element Test', () => {
     cy.visit('/')
     cy.contains("Forms").click()
     cy.contains("Datepicker").click()
+
+    let date = new Date()
+    date.setDate(date.getDate() + 35);
+    let futureDay = date.getDate()
+    let futureMonth = date.toLocaleString('default', { month: 'short' })
+    let assertDate = futureMonth + ' ' + futureDay + ', ' + date.getFullYear()
+
     cy.contains('nb-card', 'Common Datepicker').find('input').then(Input => {
       cy.wrap(Input).click()
-      cy.get('nb-calendar-day-picker').contains('18').click()
-      cy.wrap(Input).invoke('prop', 'value').should('contain', 'Aug 18, 2023')
+      selectCurrentDate()
+      function selectCurrentDate() {
+        cy.get('nb-calendar-navigation').invoke('attr', 'ng-reflect-date').then(dateAttribute => {
+          if (!dateAttribute.includes(futureMonth)) {
+            cy.get('[data-name="chevron-right"]').click()
+            selectCurrentDate()
+          } else {
+            cy.get('nb-calendar-day-picker [class="day-cell ng-star-inserted"]').contains(futureDay).click()
+          }
+        })
+
+      }
+
+      // cy.wrap(Input).invoke('prop', 'value').should('contain', assertDate)
+      cy.wrap(Input).should('have.value',assertDate)
 
     })
 
@@ -150,7 +170,7 @@ describe('Element Test', () => {
 
   })
 
-  it.only('table test', () => {
+  it('table test', () => {
     cy.visit('/')
     cy.contains("Tables & Data").click()
     cy.contains("Smart Table").click()
@@ -177,17 +197,17 @@ describe('Element Test', () => {
       cy.wrap(tableBody).eq(3).should('contain', 'Deym')
     })
 
-    const age = [20, 30, 40,200]
+    const age = [20, 30, 40, 200]
     cy.wrap(age).each(age => {
       cy.get('thead [placeholder="Age"]').clear().type(age)
-      cy.wait(500)     
+      cy.wait(500)
       cy.get('tbody tr').each(tableRow => {
-       if(age==200){
-        cy.wrap(tableRow).should('contain','No data found')
-       } else{
-        cy.wrap(tableRow).find('td').eq(6).should('contain', age)
-       }
-       
+        if (age == 200) {
+          cy.wrap(tableRow).should('contain', 'No data found')
+        } else {
+          cy.wrap(tableRow).find('td').eq(6).should('contain', age)
+        }
+
       })
     })
 
@@ -195,6 +215,31 @@ describe('Element Test', () => {
 
   })
 
+
+  it('tooltip', () => {
+    cy.visit('/')
+    cy.contains("Modal & Overlays").click()
+    cy.contains("Tooltip").click()
+    cy.contains('nb-card', 'Colored Tooltips').contains('Default').click()
+    cy.get('nb-tooltip').should('contain', 'This is a tooltip')
+
+  })
+
+  it.only('dialog box', () => {
+    cy.visit('/')
+    cy.contains("Tables & Data").click()
+    cy.contains("Smart Table").click()
+    const stub = cy.stub()
+    cy.on('window:confirm', stub)
+    cy.get('tbody tr').first().find('.nb-trash').then(() => {
+      expect(stub.getCall(0)).to.be.calledWith('Are you sure you want to delete?')
+    })
+
+    //for reject confirmation of dialog
+    // cy.get('tbody tr').first().find('.nb-trash')
+    // cy.on('window:confirm',()=>{false})
+
+  })
 
 
 })
